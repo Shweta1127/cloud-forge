@@ -21,7 +21,7 @@ A full-stack visual cloud infrastructure design tool. Drag and drop AWS, Azure, 
 
 | Layer | Technology |
 |---|---|
-| Monorepo | pnpm workspaces |
+| Monorepo | npm workspaces |
 | Language | TypeScript 5.9, Node.js 24 |
 | Frontend | React + Vite + Tailwind v4 |
 | Canvas | @xyflow/react (ReactFlow v12) |
@@ -58,9 +58,9 @@ The app runs via Replit workflows. Three services start automatically:
 
 | Service | Command |
 |---|---|
-| Web app | `pnpm --filter @workspace/cloudforge run dev` |
-| API server | `pnpm --filter @workspace/api-server run dev` |
-| Mobile app | `pnpm --filter @workspace/cloudforge-mobile run dev` |
+| Web app | `npm run dev --workspace=@workspace/cloudforge` |
+| API server | `npm run dev --workspace=@workspace/api-server` |
+| Mobile app | `npm run dev --workspace=@workspace/cloudforge-mobile` |
 
 ---
 
@@ -68,13 +68,13 @@ The app runs via Replit workflows. Three services start automatically:
 
 ```bash
 # Full typecheck across all packages
-pnpm run typecheck
+npm run typecheck
 
 # Regenerate API hooks and Zod schemas from the OpenAPI spec
-pnpm --filter @workspace/api-spec run codegen
+npm run codegen --workspace=@workspace/api-spec
 
 # Push DB schema changes (development only)
-pnpm --filter @workspace/db run push
+npm run push --workspace=@workspace/db
 ```
 
 > After every codegen run, ensure `lib/api-zod/src/index.ts` contains only:
