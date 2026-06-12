@@ -52,15 +52,61 @@ lib/
 
 ---
 
-## Getting Started
+## How to Run
 
-The app runs via Replit workflows. Three services start automatically:
+### Prerequisites
 
-| Service | Command |
+- [Node.js 24+](https://nodejs.org/)
+- npm 10+ (included with Node.js)
+- A PostgreSQL database — set the connection string as `DATABASE_URL` in your environment
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up environment variables
+
+Create a `.env` file in the root (or export these in your shell):
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/cloudforge
+SESSION_SECRET=your-secret-here
+```
+
+### 3. Push the database schema
+
+```bash
+npm run push -w @workspace/db
+```
+
+This creates all tables (`projects`, `components`, `connections`, `templates`).
+
+### 4. Start all services
+
+Each service runs independently. Open three terminals:
+
+```bash
+# Terminal 1 — API server (port from $PORT, defaults to 8080)
+npm run dev -w @workspace/api-server
+
+# Terminal 2 — Web app (port from $PORT, defaults to 5173)
+npm run dev -w @workspace/cloudforge
+
+# Terminal 3 — Mobile app (Expo)
+npm run dev -w @workspace/cloudforge-mobile
+```
+
+Then open:
+
+| App | URL |
 |---|---|
-| Web app | `npm run dev --workspace=@workspace/cloudforge` |
-| API server | `npm run dev --workspace=@workspace/api-server` |
-| Mobile app | `npm run dev --workspace=@workspace/cloudforge-mobile` |
+| Web app | http://localhost:5173 |
+| API | http://localhost:8080/api |
+| Mobile (Expo Go) | Scan the QR code shown in Terminal 3 |
+
+> **On Replit** — all three services start automatically via configured workflows. No manual setup needed.
 
 ---
 
@@ -71,10 +117,10 @@ The app runs via Replit workflows. Three services start automatically:
 npm run typecheck
 
 # Regenerate API hooks and Zod schemas from the OpenAPI spec
-npm run codegen --workspace=@workspace/api-spec
+npm run codegen -w @workspace/api-spec
 
 # Push DB schema changes (development only)
-npm run push --workspace=@workspace/db
+npm run push -w @workspace/db
 ```
 
 > After every codegen run, ensure `lib/api-zod/src/index.ts` contains only:
@@ -105,6 +151,8 @@ npm run push --workspace=@workspace/db
 | GET/POST | `/api/components` | List / create components |
 | GET/POST | `/api/connections` | List / create connections |
 | GET | `/api/templates` | List templates |
+| GET | `/api/templates/:id` | Get template details |
+| POST | `/api/templates/:id/use` | Create a project from a template (copies all components & connections) |
 | POST | `/api/import/terraform` | Parse a `.tf` file and create a project with diagram |
 | POST | `/api/export` | Export project to Terraform / CloudFormation / K8s / YAML |
 | POST | `/api/validate` | Validate project for misconfigurations |

@@ -1,0 +1,954 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: CloudForge - Visual Cloud Infrastructure Design Tool API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: projects
+    description: Infrastructure projects
+  - name: components
+    description: Canvas components (nodes)
+  - name: connections
+    description: Component connections (edges)
+  - name: templates
+    description: Prebuilt architecture templates
+  - name: export
+    description: IaC export
+  - name: validation
+    description: Validation engine
+  - name: ai
+    description: AI chat assistant
+  - name: import
+    description: Import infrastructure from external formats
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/recent:
+    get:
+      operationId: getRecentProjects
+      tags: [projects]
+      summary: Get recently modified projects
+      responses:
+        "200":
+          description: Recent projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/stats:
+    get:
+      operationId: getProjectStats
+      tags: [projects]
+      summary: Get project stats (component counts, provider breakdown)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectStats"
+
+  /projects/{projectId}/components:
+    get:
+      operationId: listComponents
+      tags: [components]
+      summary: List all components in a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of components
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Component"
+    post:
+      operationId: createComponent
+      tags: [components]
+      summary: Add a component to the canvas
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateComponentBody"
+      responses:
+        "201":
+          description: Created component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+
+  /projects/{projectId}/components/{componentId}:
+    put:
+      operationId: updateComponent
+      tags: [components]
+      summary: Update a component
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateComponentBody"
+      responses:
+        "200":
+          description: Updated component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+    delete:
+      operationId: deleteComponent
+      tags: [components]
+      summary: Delete a component
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/connections:
+    get:
+      operationId: listConnections
+      tags: [connections]
+      summary: List all connections in a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Connection"
+    post:
+      operationId: createConnection
+      tags: [connections]
+      summary: Create a connection between two components
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConnectionBody"
+      responses:
+        "201":
+          description: Created connection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Connection"
+
+  /projects/{projectId}/connections/{connectionId}:
+    delete:
+      operationId: deleteConnection
+      tags: [connections]
+      summary: Delete a connection
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/export:
+    post:
+      operationId: exportProject
+      tags: [export]
+      summary: Export project as IaC (Terraform, CloudFormation, Kubernetes)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportBody"
+      responses:
+        "200":
+          description: Generated IaC output
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResult"
+
+  /projects/{projectId}/validate:
+    post:
+      operationId: validateProject
+      tags: [validation]
+      summary: Validate infrastructure configuration
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      summary: List all prebuilt architecture templates
+      responses:
+        "200":
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Template"
+
+  /templates/{templateId}:
+    get:
+      operationId: getTemplate
+      tags: [templates]
+      summary: Get template details
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Template with components and connections
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateDetail"
+
+  /templates/{templateId}/use:
+    post:
+      operationId: useTemplate
+      tags: [templates]
+      summary: Create a project from a template, copying all components and connections
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Project created from template
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project]
+                properties:
+                  project:
+                    $ref: "#/components/schemas/ProjectSummary"
+        "404":
+          description: Template not found
+
+  /import/terraform:
+    post:
+      operationId: importTerraform
+      tags: [import]
+      summary: Import Terraform HCL and generate a visual diagram project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportTerraformBody"
+      responses:
+        "201":
+          description: Imported project with component and connection counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportTerraformResult"
+        "422":
+          description: No resources found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ai/chat:
+    post:
+      operationId: aiChat
+      tags: [ai]
+      summary: Send a message to the AI architecture assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatBody"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        provider:
+          type: string
+          description: "aws | azure | gcp | multi"
+        componentCount:
+          type: integer
+        connectionCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - provider
+        - componentCount
+        - connectionCount
+        - createdAt
+        - updatedAt
+
+    ProjectDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/Component"
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Connection"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - provider
+        - components
+        - connections
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        provider:
+          type: string
+      required:
+        - name
+        - provider
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        provider:
+          type: string
+
+    ProjectStats:
+      type: object
+      properties:
+        totalComponents:
+          type: integer
+        totalConnections:
+          type: integer
+        componentsByType:
+          type: object
+          additionalProperties:
+            type: integer
+        componentsByProvider:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+        - totalComponents
+        - totalConnections
+        - componentsByType
+        - componentsByProvider
+
+    Component:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        type:
+          type: string
+          description: "vpc | subnet | ec2 | rds | s3 | elb | eks | lambda | apigateway | cloudfront | route53 | sqs | sns | iam | nat_gateway | internet_gateway | security_group | virtual_network | vm | sql_database | blob_storage | aks | functions | app_gateway | key_vault | vnet | gke | cloud_sql | cloud_storage | cloud_functions | cloud_run | bigquery | pub_sub | load_balancer | custom"
+        provider:
+          type: string
+          description: "aws | azure | gcp"
+        name:
+          type: string
+        config:
+          type: object
+          description: Provider-specific configuration JSON
+          additionalProperties: true
+        positionX:
+          type: number
+        positionY:
+          type: number
+        width:
+          type: number
+          nullable: true
+        height:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - type
+        - provider
+        - name
+        - config
+        - positionX
+        - positionY
+        - createdAt
+        - updatedAt
+
+    CreateComponentBody:
+      type: object
+      properties:
+        type:
+          type: string
+        provider:
+          type: string
+        name:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        positionX:
+          type: number
+        positionY:
+          type: number
+        width:
+          type: number
+          nullable: true
+        height:
+          type: number
+          nullable: true
+      required:
+        - type
+        - provider
+        - name
+        - positionX
+        - positionY
+
+    UpdateComponentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        positionX:
+          type: number
+        positionY:
+          type: number
+        width:
+          type: number
+          nullable: true
+        height:
+          type: number
+          nullable: true
+
+    Connection:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        sourceComponentId:
+          type: integer
+        targetComponentId:
+          type: integer
+        label:
+          type: string
+          nullable: true
+        connectionType:
+          type: string
+          description: "network | dependency | data_flow | security"
+          nullable: true
+        sourceHandle:
+          type: string
+          nullable: true
+        targetHandle:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - sourceComponentId
+        - targetComponentId
+        - createdAt
+
+    CreateConnectionBody:
+      type: object
+      properties:
+        sourceComponentId:
+          type: integer
+        targetComponentId:
+          type: integer
+        label:
+          type: string
+          nullable: true
+        connectionType:
+          type: string
+          nullable: true
+        sourceHandle:
+          type: string
+          nullable: true
+        targetHandle:
+          type: string
+          nullable: true
+      required:
+        - sourceComponentId
+        - targetComponentId
+
+    ExportBody:
+      type: object
+      properties:
+        format:
+          type: string
+          description: "terraform | cloudformation | kubernetes | yaml"
+      required:
+        - format
+
+    ExportResult:
+      type: object
+      properties:
+        format:
+          type: string
+        content:
+          type: string
+        filename:
+          type: string
+      required:
+        - format
+        - content
+        - filename
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationIssue"
+        suggestions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationSuggestion"
+      required:
+        - valid
+        - issues
+        - suggestions
+
+    ValidationIssue:
+      type: object
+      properties:
+        severity:
+          type: string
+          description: "error | warning"
+        componentId:
+          type: integer
+          nullable: true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+        - severity
+        - message
+        - code
+
+    ValidationSuggestion:
+      type: object
+      properties:
+        type:
+          type: string
+          description: "high_availability | cost | security | performance"
+        message:
+          type: string
+        componentId:
+          type: integer
+          nullable: true
+      required:
+        - type
+        - message
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          description: "web_app | microservices | serverless | data_pipeline | kubernetes | networking"
+        provider:
+          type: string
+        componentCount:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - description
+        - category
+        - provider
+        - componentCount
+        - tags
+
+    TemplateDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        provider:
+          type: string
+        components:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        connections:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - description
+        - category
+        - provider
+        - components
+        - connections
+        - tags
+
+    ImportTerraformBody:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Terraform HCL file content
+        projectName:
+          type: string
+          nullable: true
+          description: Optional project name override
+      required:
+        - content
+
+    ImportTerraformResult:
+      type: object
+      properties:
+        project:
+          $ref: "#/components/schemas/Project"
+        componentCount:
+          type: integer
+        connectionCount:
+          type: integer
+      required:
+        - project
+        - componentCount
+        - connectionCount
+
+    AiChatBody:
+      type: object
+      properties:
+        message:
+          type: string
+        projectId:
+          type: integer
+          nullable: true
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+      required:
+        - message
+
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          description: "user | assistant"
+        content:
+          type: string
+      required:
+        - role
+        - content
+
+    AiChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+          nullable: true
+      required:
+        - message

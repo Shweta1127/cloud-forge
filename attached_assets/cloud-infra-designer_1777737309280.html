@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudForge — Visual Infrastructure Designer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #0a0d12;
+  --bg2: #0f1318;
+  --bg3: #141920;
+  --panel: #111620;
+  --border: #1e2a38;
+  --border2: #253040;
+  --accent: #00d4ff;
+  --accent2: #0088ff;
+  --accent3: #00ff88;
+  --accent4: #ff6b35;
+  --aws: #ff9900;
+  --azure: #0078d4;
+  --gcp: #4285f4;
+  --text: #e8edf5;
+  --text2: #7a90a8;
+  --text3: #4a5a70;
+  --danger: #ff4466;
+  --warn: #ffaa00;
+  --success: #00d488;
+  --canvas-bg: #0d1117;
+  --grid: rgba(30,42,56,0.5);
+  --shadow: 0 4px 24px rgba(0,0,0,0.6);
+  --glow: 0 0 20px rgba(0,212,255,0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ─── TOP BAR ─── */
+#topbar {
+  height: 52px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.logo span { color: var(--accent); }
+.logo-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+.topbar-sep { width: 1px; height: 28px; background: var(--border); }
+
+.btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.05); }
+.btn.primary { background: var(--accent2); border-color: var(--accent2); color: white; }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.success { border-color: var(--success); color: var(--success); }
+
+.provider-selector {
+  display: flex;
+  gap: 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.provider-btn {
+  padding: 4px 12px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+.provider-btn.active { color: white; }
+.provider-btn.aws.active { background: var(--aws); }
+.provider-btn.azure.active { background: var(--azure); }
+.provider-btn.gcp.active { background: var(--gcp); }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.project-name {
+  font-size: 13px;
+  color: var(--text2);
+  background: transparent;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  min-width: 140px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+.project-name:focus { border-color: var(--border2); background: var(--bg3); }
+
+/* ─── MAIN LAYOUT ─── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── LEFT SIDEBAR ─── */
+#sidebar {
+  width: 220px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.sidebar-header {
+  padding: 12px 14px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-box {
+  margin: 10px 10px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  width: 100%;
+}
+.search-box input::placeholder { color: var(--text3); }
+
+.component-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+.component-list::-webkit-scrollbar { width: 4px; }
+.component-list::-webkit-scrollbar-track { background: transparent; }
+.component-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.cat-label {
+  padding: 10px 14px 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.component-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  margin: 1px 6px;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.12s;
+  border: 1px solid transparent;
+}
+.component-item:hover {
+  background: var(--bg3);
+  border-color: var(--border);
+}
+.component-item:active { cursor: grabbing; opacity: 0.7; }
+
+.comp-icon {
+  width: 30px; height: 30px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.comp-info { flex: 1; min-width: 0; }
+.comp-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.comp-sub {
+  font-size: 9px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 1px;
+}
+
+/* ─── CANVAS AREA ─── */
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--canvas-bg);
+}
+
+#canvas-bg-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+#canvas {
+  position: absolute;
+  inset: 0;
+  cursor: default;
+}
+
+#svg-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+#svg-layer.connecting { pointer-events: all; cursor: crosshair; }
+
+.node {
+  position: absolute;
+  z-index: 10;
+  cursor: move;
+  user-select: none;
+}
+
+.node-inner {
+  background: var(--panel);
+  border: 1.5px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 140px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.node.selected .node-inner {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,212,255,0.2), var(--glow);
+}
+.node:hover .node-inner { border-color: var(--border2); box-shadow: var(--shadow); }
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.node-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.node-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.node-subtitle {
+  font-size: 9px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 1px;
+}
+
+.node-badge {
+  position: absolute;
+  top: -6px; right: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.node-props {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+.node-prop {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  padding: 2px 0;
+  border-top: 1px solid var(--border);
+}
+.prop-key { color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+.prop-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 8px; }
+
+.connect-port {
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--bg3);
+  border: 2px solid var(--border2);
+  border-radius: 50%;
+  cursor: crosshair;
+  transition: all 0.15s;
+  z-index: 20;
+}
+.connect-port:hover, .connect-port.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.4);
+}
+.port-right { right: -6px; top: 50%; transform: translateY(-50%); }
+.port-left { left: -6px; top: 50%; transform: translateY(-50%); }
+.port-bottom { bottom: -6px; left: 50%; transform: translateX(-50%); }
+.port-top { top: -6px; left: 50%; transform: translateX(-50%); }
+.port-right:hover { transform: translateY(-50%) scale(1.4); }
+.port-left:hover { transform: translateY(-50%) scale(1.4); }
+.port-bottom:hover { transform: translateX(-50%) scale(1.4); }
+.port-top:hover { transform: translateX(-50%) scale(1.4); }
+
+.node-group {
+  position: absolute;
+  z-index: 5;
+  border: 1.5px dashed;
+  border-radius: 12px;
+  cursor: move;
+}
+.group-label {
+  position: absolute;
+  top: -12px; left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ─── RIGHT PANEL ─── */
+#right-panel {
+  width: 280px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.panel-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+}
+.panel-content::-webkit-scrollbar { width: 4px; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.prop-group {
+  margin-bottom: 16px;
+}
+.prop-group-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.prop-row {
+  margin-bottom: 8px;
+}
+.prop-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 4px;
+  display: block;
+}
+.prop-input, .prop-select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.prop-input:focus, .prop-select:focus { border-color: var(--accent); }
+.prop-select { cursor: pointer; }
+.prop-select option { background: var(--panel); }
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+.toggle-label { font-size: 11px; color: var(--text2); }
+.toggle {
+  width: 32px; height: 18px;
+  background: var(--border2);
+  border-radius: 9px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--accent2); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: left 0.2s;
+}
+.toggle.on::after { left: 17px; }
+
+/* ─── VALIDATION PANEL ─── */
+.validation-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  border: 1px solid;
+}
+.validation-item.error { background: rgba(255,68,102,0.08); border-color: rgba(255,68,102,0.2); }
+.validation-item.warn { background: rgba(255,170,0,0.08); border-color: rgba(255,170,0,0.2); }
+.validation-item.info { background: rgba(0,212,136,0.08); border-color: rgba(0,212,136,0.2); }
+.val-icon { flex-shrink: 0; font-size: 13px; }
+.val-text { color: var(--text2); line-height: 1.4; }
+.val-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+/* ─── CODE OUTPUT ─── */
+.code-output {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #8fbcdb;
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.code-output::-webkit-scrollbar { width: 4px; height: 4px; }
+.code-output::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.code-kw { color: #81a1c1; }
+.code-str { color: #a3be8c; }
+.code-num { color: #b48ead; }
+.code-comment { color: #4c5a70; }
+.code-key { color: #8fbcdb; }
+
+/* ─── BOTTOM STATUS ─── */
+#statusbar {
+  height: 26px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 20px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.status-item { display: flex; align-items: center; gap: 5px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+.status-dot.warn { background: var(--warn); }
+.status-dot.error { background: var(--danger); }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  width: 640px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+}
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.modal-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.modal-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.modal-close {
+  margin-left: auto;
+  width: 28px; height: 28px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.modal-close:hover { border-color: var(--danger); color: var(--danger); }
+.modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ─── TEMPLATES ─── */
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.template-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.template-card:hover { border-color: var(--accent); background: rgba(0,212,255,0.04); }
+.template-icon { font-size: 28px; margin-bottom: 8px; }
+.template-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.template-desc { font-size: 10px; color: var(--text3); line-height: 1.5; }
+.template-tags { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.tag {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: var(--border);
+  color: var(--text3);
+}
+
+/* ─── MINIMAP ─── */
+#minimap {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 140px;
+  height: 90px;
+  background: rgba(10,13,18,0.9);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+  z-index: 50;
+}
+#minimap-canvas { width: 100%; height: 100%; }
+
+/* ─── TOOLBAR ─── */
+#toolbar {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 50;
+  box-shadow: var(--shadow);
+}
+.tool-btn {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  transition: all 0.12s;
+}
+.tool-btn:hover { background: var(--bg3); border-color: var(--border); color: var(--text); }
+.tool-btn.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+.tool-sep { width: 1px; height: 24px; background: var(--border); margin: 0 2px; }
+
+/* ─── NOTIFICATIONS ─── */
+#notifications {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.notif {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  box-shadow: var(--shadow);
+  animation: notif-in 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@keyframes notif-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.notif.success { border-color: var(--success); }
+.notif.error { border-color: var(--danger); }
+.notif.info { border-color: var(--accent); }
+
+/* ─── COLORS ─── */
+.aws-color { color: var(--aws); }
+.azure-color { color: var(--azure); }
+.gcp-color { color: var(--gcp); }
+
+.bg-aws { background: rgba(255,153,0,0.15); }
+.bg-azure { background: rgba(0,120,212,0.15); }
+.bg-gcp { background: rgba(66,133,244,0.15); }
+
+/* ─── SELECTION BOX ─── */
+#selection-box {
+  position: absolute;
+  border: 1px solid var(--accent);
+  background: rgba(0,212,255,0.05);
+  pointer-events: none;
+  z-index: 100;
+  display: none;
+}
+
+/* ─── CONTEXT MENU ─── */
+#context-menu {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 500;
+  min-width: 160px;
+  box-shadow: var(--shadow);
+  display: none;
+}
+.ctx-item {
+  padding: 7px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text2);
+  transition: all 0.1s;
+}
+.ctx-item:hover { background: var(--bg3); color: var(--text); }
+.ctx-item.danger:hover { background: rgba(255,68,102,0.1); color: var(--danger); }
+.ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
+
+/* ─── EMPTY STATE ─── */
+#empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+#empty-state.hidden { display: none; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text3); margin-bottom: 6px; }
+.empty-sub { font-size: 12px; color: var(--text3); opacity: 0.7; }
+
+/* Cost badge */
+.cost-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(0,212,136,0.1);
+  border: 1px solid rgba(0,212,136,0.25);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--success);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">☁</div>
+    Cloud<span>Forge</span>
+  </div>
+  <div class="topbar-sep"></div>
+  <input class="project-name" id="project-name" value="my-infra" />
+  <div class="topbar-sep"></div>
+  <div class="provider-selector">
+    <button class="provider-btn aws active" onclick="setProvider('aws')">AWS</button>
+    <button class="provider-btn azure" onclick="setProvider('azure')">Azure</button>
+    <button class="provider-btn gcp" onclick="setProvider('gcp')">GCP</button>
+  </div>
+  <div class="topbar-sep"></div>
+  <button class="btn" onclick="showTemplates()">📐 Templates</button>
+  <button class="btn" onclick="addGroup()">⬡ Group</button>
+  <button class="btn" onclick="validateAll()">🔍 Validate</button>
+  <div class="topbar-right">
+    <span class="cost-badge" id="cost-badge">~$0/mo</span>
+    <div class="topbar-sep"></div>
+    <button class="btn" onclick="exportYAML()">📤 Export YAML</button>
+    <button class="btn" onclick="exportTerraform()">🏗 Terraform</button>
+    <button class="btn primary" onclick="exportCFN()">⚡ Deploy</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">Components</div>
+    <div class="search-box">
+      <span style="color:var(--text3);font-size:12px">🔍</span>
+      <input placeholder="Search components..." id="search-input" oninput="filterComponents(this.value)">
+    </div>
+    <div class="component-list" id="component-list"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <div id="canvas-bg-grid"></div>
+    <div id="selection-box"></div>
+    <div id="empty-state">
+      <div class="empty-icon">☁</div>
+      <div class="empty-title">Drop components to start designing</div>
+      <div class="empty-sub">Drag from the left panel or load a template</div>
+    </div>
+    <div id="toolbar">
+      <button class="tool-btn active" id="tool-select" onclick="setTool('select')" title="Select (V)">↖</button>
+      <button class="tool-btn" id="tool-connect" onclick="setTool('connect')" title="Connect (C)">↔</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="zoomIn()" title="Zoom In (+)">+</button>
+      <button class="tool-btn" onclick="zoomOut()" title="Zoom Out (-)">−</button>
+      <button class="tool-btn" onclick="resetZoom()" title="Reset Zoom (0)">⊡</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" onclick="undo()" title="Undo (Ctrl+Z)">↩</button>
+      <button class="tool-btn" onclick="redo()" title="Redo (Ctrl+Y)">↪</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn danger" onclick="clearAll()" title="Clear All">🗑</button>
+    </div>
+    <svg id="svg-layer" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="rgba(0,212,255,0.6)"/>
+        </marker>
+        <marker id="arrow-warn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,170,0,0.8)"/>
+        </marker>
+      </defs>
+    </svg>
+    <div id="canvas"></div>
+    <div id="minimap"><canvas id="minimap-canvas"></canvas></div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-tabs">
+      <div class="panel-tab active" onclick="switchTab('config')" id="tab-config">Config</div>
+      <div class="panel-tab" onclick="switchTab('validate')" id="tab-validate">Issues</div>
+      <div class="panel-tab" onclick="switchTab('code')" id="tab-code">Code</div>
+    </div>
+    <div class="panel-content" id="panel-config">
+      <div style="text-align:center;padding:40px 0;color:var(--text3);font-size:12px;">
+        <div style="font-size:32px;margin-bottom:12px">⚙️</div>
+        Select a component to configure
+      </div>
+    </div>
+    <div class="panel-content" id="panel-validate" style="display:none">
+      <div id="validation-results">
+        <div style="text-align:center;padding:40px 0;color:var(--text3);font-size:12px;">
+          <div style="font-size:32px;margin-bottom:12px">✅</div>
+          Run validation to check your infrastructure
+        </div>
+      </div>
+    </div>
+    <div class="panel-content" id="panel-code" style="display:none">
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn" onclick="showCode('yaml')" id="code-yaml" style="flex:1;justify-content:center">YAML</button>
+        <button class="btn" onclick="showCode('tf')" id="code-tf" style="flex:1;justify-content:center">Terraform</button>
+        <button class="btn" onclick="showCode('cfn')" id="code-cfn" style="flex:1;justify-content:center">CFN</button>
+      </div>
+      <div id="code-output" class="code-output"></div>
+      <button class="btn" style="width:100%;margin-top:8px;justify-content:center" onclick="copyCode()">📋 Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="status-item"><div class="status-dot" id="status-dot"></div><span id="status-text">Ready</span></div>
+  <div class="status-item">Nodes: <span id="stat-nodes" style="color:var(--text)">0</span></div>
+  <div class="status-item">Connections: <span id="stat-edges" style="color:var(--text)">0</span></div>
+  <div class="status-item">Zoom: <span id="stat-zoom" style="color:var(--text)">100%</span></div>
+  <div class="status-item" style="margin-left:auto">Provider: <span id="stat-provider" style="color:var(--text)">AWS</span></div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="context-menu">
+  <div class="ctx-item" onclick="ctxDuplicate()">⧉ Duplicate</div>
+  <div class="ctx-item" onclick="ctxConfigure()">⚙ Configure</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxBringFront()">⬆ Bring to Front</div>
+  <div class="ctx-item danger" onclick="ctxDelete()">🗑 Delete</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Templates</div>
+        <div class="modal-sub" id="modal-sub">Choose a prebuilt architecture</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notifications"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+
+let state = {
+  provider: 'aws',
+  nodes: [],
+  edges: [],
+  groups: [],
+  selected: null,
+  tool: 'select',
+  zoom: 1,
+  pan: { x: 0, y: 0 },
+  connecting: null,
+  history: [],
+  historyIndex: -1,
+  dragging: null,
+  dragOffset: { x: 0, y: 0 },
+};
+
+const COMPONENTS = {
+  aws: [
+    { cat: 'Networking', items: [
+      { id: 'vpc', name: 'VPC', sub: 'aws_vpc', icon: '🌐', color: '#ff9900', bg: '#1a1200',
+        defaults: { cidr: '10.0.0.0/16', region: 'us-east-1', tenancy: 'default', 'dns-support': true },
+        cost: 0 },
+      { id: 'subnet', name: 'Subnet', sub: 'aws_subnet', icon: '🔷', color: '#ff9900', bg: '#1a1200',
+        defaults: { cidr: '10.0.1.0/24', az: 'us-east-1a', public: false },
+        cost: 0 },
+      { id: 'igw', name: 'Internet Gateway', sub: 'aws_igw', icon: '🌍', color: '#ff9900', bg: '#1a1200',
+        defaults: { attached: true },
+        cost: 0 },
+      { id: 'nat', name: 'NAT Gateway', sub: 'aws_nat', icon: '🔄', color: '#ff9900', bg: '#1a1200',
+        defaults: { type: 'public', eip: true },
+        cost: 45 },
+      { id: 'sg', name: 'Security Group', sub: 'aws_security_group', icon: '🛡', color: '#e8c000', bg: '#1a1500',
+        defaults: { inbound: '0.0.0.0/0:443', outbound: '0.0.0.0/0:all' },
+        cost: 0 },
+      { id: 'route53', name: 'Route 53', sub: 'aws_route53', icon: '📡', color: '#ff9900', bg: '#1a1200',
+        defaults: { type: 'Public', ttl: 300 },
+        cost: 0.5 },
+    ]},
+    { cat: 'Compute', items: [
+      { id: 'ec2', name: 'EC2 Instance', sub: 'aws_ec2', icon: '🖥', color: '#ff9900', bg: '#1a1200',
+        defaults: { type: 't3.medium', ami: 'ami-0abcdef', 'key-pair': 'my-key', ebs: '20GB' },
+        cost: 30 },
+      { id: 'asg', name: 'Auto Scaling', sub: 'aws_autoscaling_group', icon: '📈', color: '#ff9900', bg: '#1a1200',
+        defaults: { min: 1, max: 10, desired: 2, policy: 'target-tracking' },
+        cost: 0 },
+      { id: 'lambda', name: 'Lambda', sub: 'aws_lambda', icon: 'λ', color: '#ff9900', bg: '#1a1200',
+        defaults: { runtime: 'node18.x', memory: '256MB', timeout: '30s' },
+        cost: 2 },
+      { id: 'eks', name: 'EKS Cluster', sub: 'aws_eks', icon: '⎈', color: '#ff9900', bg: '#1a1200',
+        defaults: { version: '1.28', nodes: 3, 'node-type': 't3.large' },
+        cost: 150 },
+      { id: 'fargate', name: 'ECS Fargate', sub: 'aws_ecs_fargate', icon: '🐳', color: '#ff9900', bg: '#1a1200',
+        defaults: { cpu: '512', memory: '1024MB', replicas: 2 },
+        cost: 40 },
+    ]},
+    { cat: 'Load Balancing', items: [
+      { id: 'alb', name: 'App Load Balancer', sub: 'aws_alb', icon: '⚖', color: '#00aeff', bg: '#001520',
+        defaults: { scheme: 'internet-facing', protocol: 'HTTPS', port: 443 },
+        cost: 20 },
+      { id: 'nlb', name: 'Network LB', sub: 'aws_nlb', icon: '⚡', color: '#00aeff', bg: '#001520',
+        defaults: { scheme: 'internet-facing', protocol: 'TCP', port: 443 },
+        cost: 20 },
+      { id: 'cloudfront', name: 'CloudFront', sub: 'aws_cloudfront', icon: '🚀', color: '#ff9900', bg: '#1a1200',
+        defaults: { origins: 1, 'price-class': 'PriceClass_100', https: true },
+        cost: 10 },
+    ]},
+    { cat: 'Databases', items: [
+      { id: 'rds', name: 'RDS', sub: 'aws_db_instance', icon: '🗄', color: '#a855f7', bg: '#120a1a',
+        defaults: { engine: 'postgres14', type: 'db.t3.medium', storage: '100GB', 'multi-az': false },
+        cost: 90 },
+      { id: 'aurora', name: 'Aurora', sub: 'aws_aurora', icon: '✨', color: '#a855f7', bg: '#120a1a',
+        defaults: { engine: 'aurora-postgresql', 'min-acu': 0.5, 'max-acu': 16 },
+        cost: 60 },
+      { id: 'dynamodb', name: 'DynamoDB', sub: 'aws_dynamodb_table', icon: '⚡', color: '#a855f7', bg: '#120a1a',
+        defaults: { billing: 'PAY_PER_REQUEST', 'point-in-time': true },
+        cost: 5 },
+      { id: 'elasticache', name: 'ElastiCache', sub: 'aws_elasticache', icon: '⚡', color: '#a855f7', bg: '#120a1a',
+        defaults: { engine: 'redis7', 'node-type': 'cache.t3.micro', nodes: 1 },
+        cost: 25 },
+    ]},
+    { cat: 'Storage', items: [
+      { id: 's3', name: 'S3 Bucket', sub: 'aws_s3_bucket', icon: '🪣', color: '#3cc880', bg: '#041209',
+        defaults: { acl: 'private', versioning: true, encryption: 'AES256' },
+        cost: 5 },
+      { id: 'efs', name: 'EFS', sub: 'aws_efs', icon: '📁', color: '#3cc880', bg: '#041209',
+        defaults: { mode: 'generalPurpose', throughput: 'bursting', encrypted: true },
+        cost: 30 },
+    ]},
+    { cat: 'Messaging', items: [
+      { id: 'sqs', name: 'SQS Queue', sub: 'aws_sqs', icon: '📨', color: '#ff6b35', bg: '#150a00',
+        defaults: { type: 'standard', retention: '4d', dlq: true },
+        cost: 1 },
+      { id: 'sns', name: 'SNS Topic', sub: 'aws_sns', icon: '📢', color: '#ff6b35', bg: '#150a00',
+        defaults: { type: 'standard', protocol: 'https' },
+        cost: 1 },
+      { id: 'kinesis', name: 'Kinesis', sub: 'aws_kinesis', icon: '🌊', color: '#ff6b35', bg: '#150a00',
+        defaults: { shards: 1, retention: '24h' },
+        cost: 15 },
+    ]},
+    { cat: 'Security', items: [
+      { id: 'iam', name: 'IAM Role', sub: 'aws_iam_role', icon: '👤', color: '#e8c000', bg: '#1a1500',
+        defaults: { 'trust-entity': 'ec2', managed: 'AmazonEC2FullAccess' },
+        cost: 0 },
+      { id: 'kms', name: 'KMS Key', sub: 'aws_kms', icon: '🔑', color: '#e8c000', bg: '#1a1500',
+        defaults: { type: 'SYMMETRIC_DEFAULT', rotation: true },
+        cost: 1 },
+      { id: 'waf', name: 'WAF', sub: 'aws_wafv2', icon: '🔒', color: '#e8c000', bg: '#1a1500',
+        defaults: { scope: 'CLOUDFRONT', rules: 3 },
+        cost: 10 },
+    ]},
+  ],
+  azure: [
+    { cat: 'Networking', items: [
+      { id: 'vnet', name: 'Virtual Network', sub: 'azurerm_virtual_network', icon: '🌐', color: '#0078d4', bg: '#000d1a',
+        defaults: { 'address-space': '10.0.0.0/16', region: 'East US' },
+        cost: 0 },
+      { id: 'az-subnet', name: 'Subnet', sub: 'azurerm_subnet', icon: '🔷', color: '#0078d4', bg: '#000d1a',
+        defaults: { prefix: '10.0.1.0/24' },
+        cost: 0 },
+      { id: 'az-nsg', name: 'Network Security Group', sub: 'azurerm_network_security_group', icon: '🛡', color: '#0078d4', bg: '#000d1a',
+        defaults: { rules: 2 },
+        cost: 0 },
+      { id: 'az-lb', name: 'Load Balancer', sub: 'azurerm_lb', icon: '⚖', color: '#0078d4', bg: '#000d1a',
+        defaults: { sku: 'Standard', frontend: 1 },
+        cost: 18 },
+    ]},
+    { cat: 'Compute', items: [
+      { id: 'az-vm', name: 'Virtual Machine', sub: 'azurerm_linux_vm', icon: '🖥', color: '#0078d4', bg: '#000d1a',
+        defaults: { size: 'Standard_D2s_v3', os: 'Ubuntu 22.04', disk: '30GB' },
+        cost: 70 },
+      { id: 'az-aks', name: 'AKS Cluster', sub: 'azurerm_kubernetes_cluster', icon: '⎈', color: '#0078d4', bg: '#000d1a',
+        defaults: { version: '1.28', nodes: 3, vmsize: 'Standard_D4s_v3' },
+        cost: 200 },
+      { id: 'az-func', name: 'Azure Functions', sub: 'azurerm_function_app', icon: 'ƒ', color: '#0078d4', bg: '#000d1a',
+        defaults: { runtime: 'node', plan: 'consumption' },
+        cost: 5 },
+    ]},
+    { cat: 'Databases', items: [
+      { id: 'az-sql', name: 'Azure SQL', sub: 'azurerm_mssql_database', icon: '🗄', color: '#a855f7', bg: '#120a1a',
+        defaults: { edition: 'Standard', dtu: 50, geo: false },
+        cost: 75 },
+      { id: 'az-cosmos', name: 'Cosmos DB', sub: 'azurerm_cosmosdb_account', icon: '🌌', color: '#a855f7', bg: '#120a1a',
+        defaults: { api: 'Core SQL', ru: 400 },
+        cost: 25 },
+    ]},
+    { cat: 'Storage', items: [
+      { id: 'az-blob', name: 'Blob Storage', sub: 'azurerm_storage_account', icon: '🪣', color: '#3cc880', bg: '#041209',
+        defaults: { tier: 'Hot', replication: 'LRS', https: true },
+        cost: 20 },
+    ]},
+  ],
+  gcp: [
+    { cat: 'Networking', items: [
+      { id: 'gcp-vpc', name: 'VPC Network', sub: 'google_compute_network', icon: '🌐', color: '#4285f4', bg: '#00061a',
+        defaults: { 'auto-subnet': false, 'routing-mode': 'GLOBAL' },
+        cost: 0 },
+      { id: 'gcp-subnet', name: 'Subnetwork', sub: 'google_compute_subnetwork', icon: '🔷', color: '#4285f4', bg: '#00061a',
+        defaults: { cidr: '10.0.0.0/24', region: 'us-central1' },
+        cost: 0 },
+    ]},
+    { cat: 'Compute', items: [
+      { id: 'gce', name: 'Compute Engine', sub: 'google_compute_instance', icon: '🖥', color: '#4285f4', bg: '#00061a',
+        defaults: { 'machine-type': 'n2-standard-2', zone: 'us-central1-a', boot: '50GB' },
+        cost: 50 },
+      { id: 'gke', name: 'GKE Cluster', sub: 'google_container_cluster', icon: '⎈', color: '#4285f4', bg: '#00061a',
+        defaults: { version: '1.28', nodes: 3, 'machine-type': 'n2-standard-4' },
+        cost: 180 },
+      { id: 'gcf', name: 'Cloud Functions', sub: 'google_cloudfunctions_function', icon: 'ƒ', color: '#4285f4', bg: '#00061a',
+        defaults: { runtime: 'nodejs18', memory: '256MB', trigger: 'HTTP' },
+        cost: 3 },
+    ]},
+    { cat: 'Databases', items: [
+      { id: 'cloud-sql', name: 'Cloud SQL', sub: 'google_sql_database_instance', icon: '🗄', color: '#a855f7', bg: '#120a1a',
+        defaults: { tier: 'db-n1-standard-2', engine: 'POSTGRES_14', ha: false },
+        cost: 80 },
+      { id: 'firestore', name: 'Firestore', sub: 'google_firestore_database', icon: '🔥', color: '#a855f7', bg: '#120a1a',
+        defaults: { mode: 'NATIVE', region: 'us-central' },
+        cost: 10 },
+    ]},
+    { cat: 'Storage', items: [
+      { id: 'gcs', name: 'Cloud Storage', sub: 'google_storage_bucket', icon: '🪣', color: '#3cc880', bg: '#041209',
+        defaults: { class: 'STANDARD', location: 'US', versioning: false },
+        cost: 8 },
+    ]},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+
+function init() {
+  renderSidebar();
+  setupCanvas();
+  setupKeyboard();
+  updateStats();
+  saveHistory();
+}
+
+function renderSidebar(filter = '') {
+  const cats = COMPONENTS[state.provider];
+  const list = document.getElementById('component-list');
+  list.innerHTML = '';
+  cats.forEach(cat => {
+    const items = cat.items.filter(i =>
+      !filter || i.name.toLowerCase().includes(filter.toLowerCase()) || i.sub.toLowerCase().includes(filter.toLowerCase())
+    );
+    if (!items.length) return;
+    const label = document.createElement('div');
+    label.className = 'cat-label';
+    label.textContent = cat.cat;
+    list.appendChild(label);
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'component-item';
+      el.draggable = true;
+      el.innerHTML = `
+        <div class="comp-icon" style="background:${item.bg};color:${item.color}">${item.icon}</div>
+        <div class="comp-info">
+          <div class="comp-name">${item.name}</div>
+          <div class="comp-sub">${item.sub}</div>
+        </div>`;
+      el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('component-id', item.id);
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      list.appendChild(el);
+    });
+  });
+}
+
+function filterComponents(v) { renderSidebar(v); }
+
+function setProvider(p) {
+  state.provider = p;
+  document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.provider-btn.${p}`).classList.add('active');
+  document.getElementById('stat-provider').textContent = p.toUpperCase();
+  renderSidebar(document.getElementById('search-input').value);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════════════════════
+
+function setupCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const canvas = document.getElementById('canvas');
+  const svg = document.getElementById('svg-layer');
+
+  wrap.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  wrap.addEventListener('drop', onDrop);
+
+  let panning = false;
+  let panStart = { x: 0, y: 0 };
+  let selStart = null;
+
+  wrap.addEventListener('mousedown', e => {
+    if (e.target === wrap || e.target === canvas || e.target === document.getElementById('canvas-bg-grid')) {
+      deselectAll();
+      if (e.button === 1 || (e.button === 0 && state.tool === 'select')) {
+        if (e.button === 1) {
+          panning = true;
+          panStart = { x: e.clientX - state.pan.x, y: e.clientY - state.pan.y };
+        } else {
+          selStart = { x: e.clientX, y: e.clientY };
+          const box = document.getElementById('selection-box');
+          box.style.display = 'block';
+          box.style.left = selStart.x + 'px';
+          box.style.top = selStart.y + 'px';
+          box.style.width = '0px';
+          box.style.height = '0px';
+        }
+      }
+    }
+    hideContextMenu();
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (panning) {
+      state.pan.x = e.clientX - panStart.x;
+      state.pan.y = e.clientY - panStart.y;
+      applyTransform();
+    }
+    if (selStart && state.tool === 'select') {
+      const box = document.getElementById('selection-box');
+      const x = Math.min(e.clientX, selStart.x);
+      const y = Math.min(e.clientY, selStart.y);
+      const w = Math.abs(e.clientX - selStart.x);
+      const h = Math.abs(e.clientY - selStart.y);
+      box.style.left = x + 'px';
+      box.style.top = y + 'px';
+      box.style.width = w + 'px';
+      box.style.height = h + 'px';
+    }
+    if (state.connecting) {
+      drawTempEdge(e);
+    }
+    if (state.dragging) {
+      const dx = (e.clientX - state.dragOffset.x) / state.zoom;
+      const dy = (e.clientY - state.dragOffset.y) / state.zoom;
+      const node = state.nodes.find(n => n.id === state.dragging);
+      if (node) {
+        node.x = Math.round(dx / 20) * 20;
+        node.y = Math.round(dy / 20) * 20;
+        const el = document.getElementById('node-' + node.id);
+        if (el) { el.style.left = node.x + 'px'; el.style.top = node.y + 'px'; }
+        redrawEdges();
+        updateMinimap();
+      }
+    }
+  });
+
+  window.addEventListener('mouseup', e => {
+    panning = false;
+    if (selStart) {
+      document.getElementById('selection-box').style.display = 'none';
+      selStart = null;
+    }
+    if (state.dragging) {
+      state.dragging = null;
+      saveHistory();
+      updateCostBadge();
+    }
+  });
+
+  wrap.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    state.zoom = Math.max(0.3, Math.min(2.5, state.zoom + delta));
+    applyTransform();
+    document.getElementById('stat-zoom').textContent = Math.round(state.zoom * 100) + '%';
+  });
+
+  wrap.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const nodeEl = e.target.closest('.node');
+    if (nodeEl) {
+      const id = nodeEl.id.replace('node-', '');
+      selectNode(id);
+      showContextMenu(e.clientX, e.clientY, id);
+    }
+  });
+}
+
+function applyTransform() {
+  const canvas = document.getElementById('canvas');
+  canvas.style.transform = `translate(${state.pan.x}px, ${state.pan.y}px) scale(${state.zoom})`;
+  canvas.style.transformOrigin = '0 0';
+  const svg = document.getElementById('svg-layer');
+  svg.style.transform = `translate(${state.pan.x}px, ${state.pan.y}px) scale(${state.zoom})`;
+  svg.style.transformOrigin = '0 0';
+  updateMinimap();
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  const compId = e.dataTransfer.getData('component-id');
+  if (!compId) return;
+  const wrap = document.getElementById('canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const x = (e.clientX - rect.left - state.pan.x) / state.zoom;
+  const y = (e.clientY - rect.top - state.pan.y) / state.zoom;
+  addNode(compId, Math.round(x/20)*20, Math.round(y/20)*20);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NODES
+// ═══════════════════════════════════════════════════════════════
+
+function getCompDef(id) {
+  for (const cats of Object.values(COMPONENTS)) {
+    for (const cat of cats) {
+      const item = cat.items.find(i => i.id === id);
+      if (item) return item;
+    }
+  }
+  return null;
+}
+
+function addNode(compId, x = 200, y = 200, name = null, config = null) {
+  const def = getCompDef(compId);
+  if (!def) return;
+  const id = 'n' + Date.now() + Math.random().toString(36).slice(2,5);
+  const node = {
+    id, compId, x, y,
+    name: name || def.name,
+    config: config || { ...def.defaults },
+    provider: state.provider,
+  };
+  state.nodes.push(node);
+  renderNode(node);
+  updateStats();
+  updateEmptyState();
+  updateCostBadge();
+  if (document.getElementById('panel-code').style.display !== 'none') showCode(state.currentCodeType || 'yaml');
+  return node;
+}
+
+function renderNode(node) {
+  const def = getCompDef(node.compId);
+  const canvas = document.getElementById('canvas');
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.id = 'node-' + node.id;
+  el.style.left = node.x + 'px';
+  el.style.top = node.y + 'px';
+
+  const provColor = { aws: '#ff9900', azure: '#0078d4', gcp: '#4285f4' }[node.provider] || '#888';
+  const provLabel = node.provider.toUpperCase();
+
+  const propsHtml = Object.entries(node.config).slice(0,3).map(([k,v]) =>
+    `<div class="node-prop"><span class="prop-key">${k}</span><span class="prop-val">${String(v).slice(0,14)}</span></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="node-inner">
+      <div class="node-badge" style="background:${provColor}22;color:${provColor};border:1px solid ${provColor}44">${provLabel}</div>
+      <div class="node-header">
+        <div class="node-icon" style="background:${def.bg};color:${def.color}">${def.icon}</div>
+        <div>
+          <div class="node-title">${node.name}</div>
+          <div class="node-subtitle">${def.sub}</div>
+        </div>
+      </div>
+      <div class="node-props">${propsHtml}</div>
+      <div class="connect-port port-right" data-node="${node.id}" data-port="right"></div>
+      <div class="connect-port port-left" data-node="${node.id}" data-port="left"></div>
+      <div class="connect-port port-bottom" data-node="${node.id}" data-port="bottom"></div>
+      <div class="connect-port port-top" data-node="${node.id}" data-port="top"></div>
+    </div>`;
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('connect-port')) return;
+    if (state.tool === 'connect') return;
+    e.stopPropagation();
+    selectNode(node.id);
+    state.dragging = node.id;
+    state.dragOffset = {
+      x: e.clientX - node.x * state.zoom,
+      y: e.clientY - node.y * state.zoom,
+    };
+  });
+
+  el.addEventListener('click', e => {
+    if (e.target.classList.contains('connect-port')) return;
+    selectNode(node.id);
+  });
+
+  el.querySelectorAll('.connect-port').forEach(port => {
+    port.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      state.connecting = { from: node.id, port: port.dataset.port };
+      document.getElementById('svg-layer').classList.add('connecting');
+    });
+    port.addEventListener('mouseup', e => {
+      if (state.connecting && state.connecting.from !== node.id) {
+        addEdge(state.connecting.from, node.id);
+      }
+      finishConnect();
+    });
+  });
+
+  canvas.appendChild(el);
+}
+
+function selectNode(id) {
+  document.querySelectorAll('.node.selected').forEach(n => n.classList.remove('selected'));
+  state.selected = id;
+  if (id) {
+    document.getElementById('node-' + id)?.classList.add('selected');
+    renderConfigPanel(id);
+  }
+}
+
+function deselectAll() { selectNode(null); renderConfigPanel(null); }
+
+function deleteNode(id) {
+  state.nodes = state.nodes.filter(n => n.id !== id);
+  state.edges = state.edges.filter(e => e.from !== id && e.to !== id);
+  document.getElementById('node-' + id)?.remove();
+  redrawEdges();
+  updateStats();
+  updateEmptyState();
+  updateCostBadge();
+  saveHistory();
+  if (state.selected === id) { state.selected = null; deselectAll(); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EDGES
+// ═══════════════════════════════════════════════════════════════
+
+function addEdge(from, to, type = 'default') {
+  if (state.edges.find(e => (e.from === from && e.to === to) || (e.from === to && e.to === from))) return;
+  state.edges.push({ id: 'e' + Date.now(), from, to, type });
+  redrawEdges();
+  updateStats();
+  saveHistory();
+}
+
+function getNodeCenter(id) {
+  const node = state.nodes.find(n => n.id === id);
+  if (!node) return { x: 0, y: 0 };
+  const el = document.getElementById('node-' + id);
+  if (!el) return { x: node.x + 80, y: node.y + 50 };
+  return {
+    x: node.x + el.offsetWidth / 2,
+    y: node.y + el.offsetHeight / 2,
+  };
+}
+
+function redrawEdges() {
+  const svg = document.getElementById('svg-layer');
+  svg.querySelectorAll('.edge-path, .edge-temp').forEach(e => e.remove());
+  state.edges.forEach(edge => {
+    const from = getNodeCenter(edge.from);
+    const to = getNodeCenter(edge.to);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const cx = dx * 0.5;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const d = `M${from.x},${from.y} C${from.x+cx},${from.y} ${to.x-cx},${to.y} ${to.x},${to.y}`;
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'edge-path');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', edge.type === 'warn' ? 'rgba(255,170,0,0.6)' : 'rgba(0,212,255,0.4)');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('marker-end', edge.type === 'warn' ? 'url(#arrow-warn)' : 'url(#arrow)');
+    path.setAttribute('stroke-dasharray', edge.type === 'dashed' ? '6,4' : '');
+    path.style.cursor = 'pointer';
+    path.addEventListener('click', () => {
+      state.edges = state.edges.filter(e => e.id !== edge.id);
+      redrawEdges();
+      updateStats();
+      saveHistory();
+    });
+    svg.appendChild(path);
+  });
+}
+
+let tempEdge = null;
+function drawTempEdge(e) {
+  if (!state.connecting) return;
+  const from = getNodeCenter(state.connecting.from);
+  const wrap = document.getElementById('canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const tx = (e.clientX - rect.left - state.pan.x) / state.zoom;
+  const ty = (e.clientY - rect.top - state.pan.y) / state.zoom;
+  const svg = document.getElementById('svg-layer');
+  if (tempEdge) tempEdge.remove();
+  tempEdge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  const dx = tx - from.x;
+  const d = `M${from.x},${from.y} C${from.x+dx*0.5},${from.y} ${tx-dx*0.5},${ty} ${tx},${ty}`;
+  tempEdge.setAttribute('d', d);
+  tempEdge.setAttribute('class', 'edge-temp');
+  tempEdge.setAttribute('fill', 'none');
+  tempEdge.setAttribute('stroke', 'rgba(0,212,255,0.3)');
+  tempEdge.setAttribute('stroke-width', '1.5');
+  tempEdge.setAttribute('stroke-dasharray', '5,4');
+  svg.appendChild(tempEdge);
+}
+
+function finishConnect() {
+  state.connecting = null;
+  document.getElementById('svg-layer').classList.remove('connecting');
+  if (tempEdge) { tempEdge.remove(); tempEdge = null; }
+}
+
+window.addEventListener('mouseup', e => {
+  if (state.connecting && !e.target.closest('.connect-port')) finishConnect();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG PANEL
+// ═══════════════════════════════════════════════════════════════
+
+function renderConfigPanel(id) {
+  const panel = document.getElementById('panel-config');
+  if (!id) {
+    panel.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:12px;"><div style="font-size:32px;margin-bottom:12px">⚙️</div>Select a component to configure</div>`;
+    return;
+  }
+  const node = state.nodes.find(n => n.id === id);
+  if (!node) return;
+  const def = getCompDef(node.compId);
+
+  let html = `
+    <div class="prop-group">
+      <div class="prop-group-label">Component</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:8px;background:${def.bg};color:${def.color};display:flex;align-items:center;justify-content:center;font-size:18px">${def.icon}</div>
+        <div><div style="font-size:12px;font-weight:700">${def.name}</div><div style="font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace">${def.sub}</div></div>
+      </div>
+      <div class="prop-row">
+        <label class="prop-label">Display Name</label>
+        <input class="prop-input" value="${node.name}" onchange="updateNodeName('${id}', this.value)">
+      </div>
+    </div>
+    <div class="prop-group">
+      <div class="prop-group-label">Configuration</div>`;
+
+  Object.entries(node.config).forEach(([k, v]) => {
+    if (typeof v === 'boolean') {
+      html += `<div class="toggle-row">
+        <span class="toggle-label">${k}</span>
+        <div class="toggle ${v ? 'on' : ''}" onclick="toggleConfig('${id}','${k}',this)"></div>
+      </div>`;
+    } else {
+      html += `<div class="prop-row">
+        <label class="prop-label">${k}</label>
+        <input class="prop-input" value="${v}" onchange="updateConfig('${id}','${k}',this.value)">
+      </div>`;
+    }
+  });
+
+  html += `</div>
+    <div class="prop-group">
+      <div class="prop-group-label">Estimated Cost</div>
+      <div class="cost-badge" style="font-size:13px;padding:6px 12px">~$${def.cost}/mo</div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn danger" style="width:100%;justify-content:center" onclick="deleteNode('${id}')">🗑 Delete Component</button>
+    </div>`;
+
+  panel.innerHTML = html;
+}
+
+function updateNodeName(id, val) {
+  const node = state.nodes.find(n => n.id === id);
+  if (node) {
+    node.name = val;
+    const el = document.getElementById('node-' + id);
+    if (el) el.querySelector('.node-title').textContent = val;
+    saveHistory();
+  }
+}
+
+function updateConfig(id, key, val) {
+  const node = state.nodes.find(n => n.id === id);
+  if (node) { node.config[key] = val; updateNodeDisplay(node); saveHistory(); }
+}
+
+function toggleConfig(id, key, el) {
+  const node = state.nodes.find(n => n.id === id);
+  if (node) {
+    node.config[key] = !node.config[key];
+    el.classList.toggle('on', node.config[key]);
+    saveHistory();
+  }
+}
+
+function updateNodeDisplay(node) {
+  const el = document.getElementById('node-' + node.id);
+  if (!el) return;
+  const propsHtml = Object.entries(node.config).slice(0,3).map(([k,v]) =>
+    `<div class="node-prop"><span class="prop-key">${k}</span><span class="prop-val">${String(v).slice(0,14)}</span></div>`
+  ).join('');
+  const propsEl = el.querySelector('.node-props');
+  if (propsEl) propsEl.innerHTML = propsHtml;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════════════════════════
+
+function validateAll() {
+  switchTab('validate');
+  const issues = [];
+
+  // Check for public databases
+  state.nodes.forEach(n => {
+    if (['rds', 'aurora', 'az-sql', 'cloud-sql'].includes(n.compId)) {
+      const connected = state.edges.filter(e => e.from === n.id || e.to === n.id);
+      const connectedTo = connected.map(e => e.from === n.id ? e.to : e.from);
+      const hasSubnet = connectedTo.some(id => ['subnet', 'az-subnet', 'gcp-subnet'].includes(state.nodes.find(x => x.id === id)?.compId));
+      if (!hasSubnet) {
+        issues.push({ type: 'error', title: `DB Exposure Risk — ${n.name}`, msg: 'Database not placed in a subnet. Risk of public exposure.' });
+      }
+    }
+  });
+
+  // Check CIDR
+  state.nodes.forEach(n => {
+    if (n.config.cidr) {
+      if (!isValidCIDR(n.config.cidr)) {
+        issues.push({ type: 'error', title: `Invalid CIDR — ${n.name}`, msg: `"${n.config.cidr}" is not a valid CIDR range.` });
+      }
+    }
+  });
+
+  // Multi-AZ check for RDS
+  state.nodes.forEach(n => {
+    if (n.compId === 'rds' && !n.config['multi-az']) {
+      issues.push({ type: 'warn', title: `No Multi-AZ — ${n.name}`, msg: 'RDS without Multi-AZ risks downtime during maintenance.' });
+    }
+  });
+
+  // Load balancer without compute
+  state.nodes.forEach(n => {
+    if (['alb', 'nlb', 'az-lb'].includes(n.compId)) {
+      const connected = state.edges.filter(e => e.from === n.id || e.to === n.id);
+      if (!connected.length) {
+        issues.push({ type: 'warn', title: `Orphan Load Balancer — ${n.name}`, msg: 'Load balancer has no connected targets.' });
+      }
+    }
+  });
+
+  // S3 encryption
+  state.nodes.forEach(n => {
+    if (n.compId === 's3' && !n.config.encryption) {
+      issues.push({ type: 'warn', title: `S3 Not Encrypted — ${n.name}`, msg: 'Enable server-side encryption for compliance.' });
+    }
+  });
+
+  // Security group with 0.0.0.0/0
+  state.nodes.forEach(n => {
+    if (n.compId === 'sg') {
+      if (n.config.inbound?.includes('0.0.0.0/0')) {
+        issues.push({ type: 'warn', title: `Open Inbound — ${n.name}`, msg: 'Security group allows all inbound. Restrict to known CIDRs.' });
+      }
+    }
+  });
+
+  // Best practice: suggest CloudFront for S3 buckets
+  const hasS3 = state.nodes.some(n => n.compId === 's3');
+  const hasCF = state.nodes.some(n => n.compId === 'cloudfront');
+  if (hasS3 && !hasCF) {
+    issues.push({ type: 'info', title: 'Tip: Add CloudFront', msg: 'Add CloudFront in front of your S3 bucket for better performance and caching.' });
+  }
+
+  // VPC without subnets
+  state.nodes.forEach(n => {
+    if (n.compId === 'vpc') {
+      const connected = state.edges.filter(e => e.from === n.id || e.to === n.id);
+      const connectedTo = connected.map(e => e.from === n.id ? e.to : e.from);
+      const hasSubnet = connectedTo.some(id => state.nodes.find(x => x.id === id)?.compId === 'subnet');
+      if (!hasSubnet) {
+        issues.push({ type: 'warn', title: `VPC without Subnet — ${n.name}`, msg: 'Add at least one subnet to this VPC.' });
+      }
+    }
+  });
+
+  if (!issues.length) {
+    issues.push({ type: 'info', title: 'All checks passed!', msg: 'No critical issues found. Your infrastructure looks good.' });
+  }
+
+  const container = document.getElementById('validation-results');
+  container.innerHTML = issues.map(i => `
+    <div class="validation-item ${i.type}">
+      <span class="val-icon">${i.type === 'error' ? '🔴' : i.type === 'warn' ? '🟡' : '✅'}</span>
+      <div class="val-text"><strong>${i.title}</strong>${i.msg}</div>
+    </div>`).join('');
+
+  const errors = issues.filter(i => i.type === 'error').length;
+  const warns = issues.filter(i => i.type === 'warn').length;
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  if (errors) { dot.className = 'status-dot error'; text.textContent = `${errors} error(s), ${warns} warning(s)`; }
+  else if (warns) { dot.className = 'status-dot warn'; text.textContent = `${warns} warning(s)`; }
+  else { dot.className = 'status-dot'; text.textContent = 'Validation passed'; }
+
+  notify(`Found ${errors} errors, ${warns} warnings`, errors ? 'error' : warns ? 'info' : 'success');
+}
+
+function isValidCIDR(cidr) {
+  return /^(\d{1,3}\.){3}\d{1,3}\/(\d|[1-2]\d|3[0-2])$/.test(cidr);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CODE EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+state.currentCodeType = 'yaml';
+
+function showCode(type) {
+  state.currentCodeType = type;
+  switchTab('code');
+  ['yaml','tf','cfn'].forEach(t => {
+    document.getElementById('code-' + t).classList.toggle('primary', t === type);
+  });
+  const output = document.getElementById('code-output');
+  if (type === 'yaml') output.textContent = generateYAML();
+  else if (type === 'tf') output.textContent = generateTerraform();
+  else if (type === 'cfn') output.textContent = generateCFN();
+}
+
+function generateYAML() {
+  if (!state.nodes.length) return '# No components added yet';
+  const projectName = document.getElementById('project-name').value || 'my-infra';
+  let yaml = `# CloudForge Export — ${projectName}
+# Provider: ${state.provider.toUpperCase()}
+# Generated: ${new Date().toISOString()}\n
+apiVersion: cloudforge/v1
+kind: Infrastructure
+metadata:
+  name: ${projectName}
+  provider: ${state.provider}
+  version: "1.0.0"\n
+spec:
+  resources:\n`;
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    yaml += `    - id: ${n.id}\n`;
+    yaml += `      type: ${def.sub}\n`;
+    yaml += `      name: "${n.name}"\n`;
+    yaml += `      config:\n`;
+    Object.entries(n.config).forEach(([k,v]) => {
+      yaml += `        ${k}: ${typeof v === 'string' ? `"${v}"` : v}\n`;
+    });
+  });
+  if (state.edges.length) {
+    yaml += `\n  connections:\n`;
+    state.edges.forEach(e => {
+      const from = state.nodes.find(n => n.id === e.from);
+      const to = state.nodes.find(n => n.id === e.to);
+      yaml += `    - from: ${from?.name || e.from}\n      to: ${to?.name || e.to}\n`;
+    });
+  }
+  return yaml;
+}
+
+function generateTerraform() {
+  if (!state.nodes.length) return '# No components added yet';
+  const projectName = document.getElementById('project-name').value || 'my-infra';
+  let tf = `# Terraform Configuration — ${projectName}
+# Provider: ${state.provider.toUpperCase()}
+# Generated by CloudForge\n\n`;
+
+  const providerConfigs = {
+    aws: `terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}\n\n`,
+    azure: `terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}\n\n`,
+    gcp: `terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = "us-central1"
+}\n\n`,
+  };
+
+  tf += providerConfigs[state.provider] || '';
+
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    const resName = n.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    tf += `resource "${def.sub}" "${resName}" {\n`;
+    Object.entries(n.config).forEach(([k,v]) => {
+      const tfKey = k.replace(/-/g, '_');
+      tf += `  ${tfKey} = ${typeof v === 'boolean' ? v : typeof v === 'number' ? v : `"${v}"`}\n`;
+    });
+    tf += `\n  tags = {\n    Project     = "${projectName}"\n    ManagedBy   = "CloudForge"\n  }\n}\n\n`;
+  });
+
+  tf += `output "infrastructure_summary" {\n  value = {\n`;
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    const resName = n.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    tf += `    ${resName} = ${def.sub}.${resName}.id\n`;
+  });
+  tf += `  }\n}\n`;
+  return tf;
+}
+
+function generateCFN() {
+  if (!state.nodes.length) return '# No components added yet';
+  const projectName = document.getElementById('project-name').value || 'my-infra';
+  let cfn = `AWSTemplateFormatVersion: '2010-09-09'
+Description: '${projectName} — Generated by CloudForge'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production, staging, development]
+
+Resources:\n`;
+
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    const logicalId = n.name.replace(/[^a-zA-Z0-9]/g, '');
+    const cfnType = getCFNType(n.compId);
+    cfn += `\n  ${logicalId}:\n    Type: ${cfnType}\n    Properties:\n`;
+    Object.entries(n.config).forEach(([k, v]) => {
+      const cfnKey = k.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+      cfn += `      ${cfnKey}: ${typeof v === 'boolean' ? v : `"${v}"`}\n`;
+    });
+    cfn += `      Tags:\n        - Key: Project\n          Value: ${projectName}\n        - Key: ManagedBy\n          Value: CloudForge\n`;
+  });
+
+  cfn += `\nOutputs:\n`;
+  state.nodes.slice(0,3).forEach(n => {
+    const logicalId = n.name.replace(/[^a-zA-Z0-9]/g, '');
+    cfn += `  ${logicalId}Id:\n    Description: "${n.name} resource ID"\n    Value: !Ref ${logicalId}\n`;
+  });
+  return cfn;
+}
+
+function getCFNType(compId) {
+  const map = {
+    vpc: 'AWS::EC2::VPC', subnet: 'AWS::EC2::Subnet', igw: 'AWS::EC2::InternetGateway',
+    nat: 'AWS::EC2::NatGateway', sg: 'AWS::EC2::SecurityGroup', ec2: 'AWS::EC2::Instance',
+    asg: 'AWS::AutoScaling::AutoScalingGroup', lambda: 'AWS::Lambda::Function',
+    alb: 'AWS::ElasticLoadBalancingV2::LoadBalancer', rds: 'AWS::RDS::DBInstance',
+    s3: 'AWS::S3::Bucket', sqs: 'AWS::SQS::Queue', sns: 'AWS::SNS::Topic',
+    eks: 'AWS::EKS::Cluster', dynamodb: 'AWS::DynamoDB::Table',
+    cloudfront: 'AWS::CloudFront::Distribution', route53: 'AWS::Route53::RecordSet',
+    iam: 'AWS::IAM::Role', kms: 'AWS::KMS::Key',
+  };
+  return map[compId] || 'AWS::CloudFormation::CustomResource';
+}
+
+function exportYAML() {
+  const yaml = generateYAML();
+  download(`${document.getElementById('project-name').value || 'infra'}.yaml`, yaml);
+  notify('YAML exported!', 'success');
+}
+
+function exportTerraform() {
+  const tf = generateTerraform();
+  download(`${document.getElementById('project-name').value || 'infra'}.tf`, tf);
+  notify('Terraform exported!', 'success');
+}
+
+function exportCFN() {
+  const cfn = generateCFN();
+  download(`${document.getElementById('project-name').value || 'infra'}-cfn.yaml`, cfn);
+  notify('CloudFormation exported!', 'success');
+}
+
+function copyCode() {
+  const code = document.getElementById('code-output').textContent;
+  navigator.clipboard.writeText(code).then(() => notify('Copied to clipboard!', 'success'));
+}
+
+function download(filename, content) {
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+
+const TEMPLATES = [
+  {
+    name: '3-Tier Web App',
+    icon: '🏗',
+    desc: 'Classic web tier, app tier, database tier with load balancing',
+    tags: ['AWS', 'Production', 'HA'],
+    nodes: [
+      { compId: 'vpc', x: 300, y: 60, name: 'Main VPC', config: { cidr: '10.0.0.0/16', region: 'us-east-1', tenancy: 'default', 'dns-support': true } },
+      { compId: 'subnet', x: 100, y: 180, name: 'Public Subnet', config: { cidr: '10.0.1.0/24', az: 'us-east-1a', public: true } },
+      { compId: 'subnet', x: 320, y: 180, name: 'App Subnet', config: { cidr: '10.0.2.0/24', az: 'us-east-1a', public: false } },
+      { compId: 'subnet', x: 540, y: 180, name: 'DB Subnet', config: { cidr: '10.0.3.0/24', az: 'us-east-1b', public: false } },
+      { compId: 'alb', x: 100, y: 320, name: 'Public ALB', config: { scheme: 'internet-facing', protocol: 'HTTPS', port: 443 } },
+      { compId: 'asg', x: 320, y: 320, name: 'App Servers', config: { min: 2, max: 8, desired: 3, policy: 'target-tracking' } },
+      { compId: 'rds', x: 540, y: 320, name: 'Primary RDS', config: { engine: 'postgres14', type: 'db.t3.medium', storage: '100GB', 'multi-az': true } },
+      { compId: 'igw', x: 100, y: 60, name: 'Internet GW', config: { attached: true } },
+    ],
+    edges: [[0,1],[0,2],[0,3],[1,4],[2,5],[3,6],[4,5],[5,6],[7,0]],
+  },
+  {
+    name: 'Microservices',
+    icon: '🔬',
+    desc: 'Kubernetes-based microservices with API gateway and service mesh',
+    tags: ['EKS', 'K8s', 'Cloud-native'],
+    nodes: [
+      { compId: 'vpc', x: 260, y: 40, name: 'Services VPC', config: { cidr: '172.16.0.0/16', region: 'us-east-1', tenancy: 'default', 'dns-support': true } },
+      { compId: 'eks', x: 260, y: 180, name: 'EKS Cluster', config: { version: '1.28', nodes: 5, 'node-type': 't3.large' } },
+      { compId: 'alb', x: 60, y: 180, name: 'API Gateway ALB', config: { scheme: 'internet-facing', protocol: 'HTTPS', port: 443 } },
+      { compId: 'rds', x: 460, y: 300, name: 'Services DB', config: { engine: 'postgres14', type: 'db.r6g.large', storage: '200GB', 'multi-az': true } },
+      { compId: 'elasticache', x: 60, y: 300, name: 'Redis Cache', config: { engine: 'redis7', 'node-type': 'cache.t3.small', nodes: 2 } },
+      { compId: 'sqs', x: 460, y: 180, name: 'Event Queue', config: { type: 'standard', retention: '7d', dlq: true } },
+      { compId: 's3', x: 260, y: 380, name: 'Asset Storage', config: { acl: 'private', versioning: true, encryption: 'AES256' } },
+      { compId: 'cloudfront', x: 60, y: 60, name: 'CDN', config: { origins: 2, 'price-class': 'PriceClass_All', https: true } },
+    ],
+    edges: [[2,1],[1,3],[1,4],[1,5],[1,6],[7,2]],
+  },
+  {
+    name: 'Serverless API',
+    icon: '⚡',
+    desc: 'API Gateway → Lambda → DynamoDB serverless stack',
+    tags: ['Lambda', 'Serverless', 'Pay-per-use'],
+    nodes: [
+      { compId: 'cloudfront', x: 200, y: 40, name: 'CDN Layer', config: { origins: 1, 'price-class': 'PriceClass_100', https: true } },
+      { compId: 'lambda', x: 200, y: 160, name: 'API Handler', config: { runtime: 'node18.x', memory: '512MB', timeout: '30s' } },
+      { compId: 'dynamodb', x: 380, y: 160, name: 'Data Store', config: { billing: 'PAY_PER_REQUEST', 'point-in-time': true } },
+      { compId: 'sqs', x: 60, y: 280, name: 'Async Queue', config: { type: 'standard', retention: '4d', dlq: true } },
+      { compId: 'sns', x: 380, y: 280, name: 'Notifications', config: { type: 'standard', protocol: 'https' } },
+      { compId: 's3', x: 200, y: 280, name: 'Uploads', config: { acl: 'private', versioning: false, encryption: 'AES256' } },
+    ],
+    edges: [[0,1],[1,2],[3,1],[1,4],[1,5]],
+  },
+  {
+    name: 'Data Pipeline',
+    icon: '🌊',
+    desc: 'Real-time data ingestion, processing, and analytics',
+    tags: ['Kinesis', 'Analytics', 'Streaming'],
+    nodes: [
+      { compId: 'kinesis', x: 60, y: 160, name: 'Data Stream', config: { shards: 4, retention: '48h' } },
+      { compId: 'lambda', x: 260, y: 160, name: 'Processor', config: { runtime: 'python3.11', memory: '1024MB', timeout: '300s' } },
+      { compId: 's3', x: 460, y: 80, name: 'Raw Data Lake', config: { acl: 'private', versioning: true, encryption: 'AES256' } },
+      { compId: 's3', x: 460, y: 240, name: 'Processed Data', config: { acl: 'private', versioning: false, encryption: 'AES256' } },
+      { compId: 'dynamodb', x: 260, y: 300, name: 'Metrics Store', config: { billing: 'PAY_PER_REQUEST', 'point-in-time': false } },
+      { compId: 'sns', x: 60, y: 300, name: 'Alerts', config: { type: 'standard', protocol: 'email' } },
+    ],
+    edges: [[0,1],[1,2],[1,3],[1,4],[4,5]],
+  },
+];
+
+function showTemplates() {
+  document.getElementById('modal-title').textContent = 'Templates';
+  document.getElementById('modal-sub').textContent = 'Load a prebuilt architecture to get started fast';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="template-grid">
+      ${TEMPLATES.map((t, i) => `
+        <div class="template-card" onclick="loadTemplate(${i})">
+          <div class="template-icon">${t.icon}</div>
+          <div class="template-name">${t.name}</div>
+          <div class="template-desc">${t.desc}</div>
+          <div class="template-tags">${t.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button>`;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function loadTemplate(idx) {
+  clearAll(true);
+  const tpl = TEMPLATES[idx];
+  const nodeMap = [];
+  tpl.nodes.forEach(n => {
+    const node = addNode(n.compId, n.x, n.y, n.name, n.config);
+    nodeMap.push(node.id);
+  });
+  tpl.edges.forEach(([fi, ti]) => { if (nodeMap[fi] && nodeMap[ti]) addEdge(nodeMap[fi], nodeMap[ti]); });
+  closeModal();
+  notify(`Loaded: ${tpl.name}`, 'success');
+  updateCostBadge();
+  saveHistory();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GROUPS
+// ═══════════════════════════════════════════════════════════════
+
+function addGroup() {
+  const id = 'g' + Date.now();
+  const group = { id, name: 'Group', x: 80, y: 80, w: 400, h: 280, color: '#00d4ff' };
+  state.groups.push(group);
+  renderGroup(group);
+}
+
+function renderGroup(group) {
+  const canvas = document.getElementById('canvas');
+  const el = document.createElement('div');
+  el.className = 'node-group';
+  el.id = 'group-' + group.id;
+  el.style.cssText = `left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px;border-color:${group.color}44;background:${group.color}08;`;
+  el.innerHTML = `<div class="group-label" style="background:${group.color}22;color:${group.color};border:1px solid ${group.color}44">${group.name}</div>`;
+  el.addEventListener('mousedown', e => {
+    if (state.tool === 'select') {
+      let start = { x: e.clientX - group.x * state.zoom, y: e.clientY - group.y * state.zoom };
+      const mv = ev => {
+        group.x = (ev.clientX - start.x) / state.zoom;
+        group.y = (ev.clientY - start.y) / state.zoom;
+        el.style.left = group.x + 'px';
+        el.style.top = group.y + 'px';
+      };
+      const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', mv);
+      window.addEventListener('mouseup', up);
+    }
+  });
+  canvas.insertBefore(el, canvas.firstChild);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLBAR & TOOLS
+// ═══════════════════════════════════════════════════════════════
+
+function setTool(t) {
+  state.tool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + t)?.classList.add('active');
+  document.getElementById('canvas-wrap').style.cursor = t === 'connect' ? 'crosshair' : 'default';
+}
+
+function zoomIn() { state.zoom = Math.min(2.5, state.zoom + 0.1); applyTransform(); document.getElementById('stat-zoom').textContent = Math.round(state.zoom*100)+'%'; }
+function zoomOut() { state.zoom = Math.max(0.3, state.zoom - 0.1); applyTransform(); document.getElementById('stat-zoom').textContent = Math.round(state.zoom*100)+'%'; }
+function resetZoom() { state.zoom = 1; state.pan = { x: 0, y: 0 }; applyTransform(); document.getElementById('stat-zoom').textContent = '100%'; }
+
+function clearAll(silent = false) {
+  state.nodes = [];
+  state.edges = [];
+  state.groups = [];
+  document.getElementById('canvas').innerHTML = '';
+  document.getElementById('svg-layer').querySelectorAll('.edge-path').forEach(e => e.remove());
+  updateStats();
+  updateEmptyState();
+  updateCostBadge();
+  deselectAll();
+  if (!silent) { saveHistory(); notify('Canvas cleared', 'info'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HISTORY (UNDO/REDO)
+// ═══════════════════════════════════════════════════════════════
+
+function saveHistory() {
+  const snap = JSON.stringify({ nodes: state.nodes, edges: state.edges, groups: state.groups });
+  state.history = state.history.slice(0, state.historyIndex + 1);
+  state.history.push(snap);
+  state.historyIndex = state.history.length - 1;
+  if (state.history.length > 50) { state.history.shift(); state.historyIndex--; }
+}
+
+function undo() {
+  if (state.historyIndex <= 0) return;
+  state.historyIndex--;
+  restoreHistory();
+}
+
+function redo() {
+  if (state.historyIndex >= state.history.length - 1) return;
+  state.historyIndex++;
+  restoreHistory();
+}
+
+function restoreHistory() {
+  const snap = JSON.parse(state.history[state.historyIndex]);
+  state.nodes = snap.nodes;
+  state.edges = snap.edges;
+  state.groups = snap.groups || [];
+  document.getElementById('canvas').innerHTML = '';
+  state.nodes.forEach(n => renderNode(n));
+  state.groups.forEach(g => renderGroup(g));
+  redrawEdges();
+  updateStats();
+  updateEmptyState();
+  updateCostBadge();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════════════
+
+let ctxNodeId = null;
+function showContextMenu(x, y, nodeId) {
+  ctxNodeId = nodeId;
+  const menu = document.getElementById('context-menu');
+  menu.style.display = 'block';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+}
+function hideContextMenu() { document.getElementById('context-menu').style.display = 'none'; }
+function ctxDelete() { if (ctxNodeId) deleteNode(ctxNodeId); hideContextMenu(); }
+function ctxDuplicate() {
+  if (!ctxNodeId) return;
+  const node = state.nodes.find(n => n.id === ctxNodeId);
+  if (node) addNode(node.compId, node.x + 40, node.y + 40, node.name + ' copy', { ...node.config });
+  hideContextMenu();
+}
+function ctxConfigure() { if (ctxNodeId) { selectNode(ctxNodeId); switchTab('config'); } hideContextMenu(); }
+function ctxBringFront() {
+  const el = document.getElementById('node-' + ctxNodeId);
+  if (el) el.style.zIndex = 100;
+  hideContextMenu();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  ['config','validate','code'].forEach(t => {
+    document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'code') showCode(state.currentCodeType || 'yaml');
+}
+
+function updateStats() {
+  document.getElementById('stat-nodes').textContent = state.nodes.length;
+  document.getElementById('stat-edges').textContent = state.edges.length;
+}
+
+function updateEmptyState() {
+  document.getElementById('empty-state').classList.toggle('hidden', state.nodes.length > 0);
+}
+
+function updateCostBadge() {
+  let total = 0;
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    if (def) total += def.cost || 0;
+  });
+  document.getElementById('cost-badge').textContent = `~$${total.toLocaleString()}/mo`;
+}
+
+function updateMinimap() {
+  const canvas = document.getElementById('minimap-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 140; canvas.height = 90;
+  ctx.clearRect(0, 0, 140, 90);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, 140, 90);
+  if (!state.nodes.length) return;
+  const scale = 0.18;
+  ctx.save();
+  ctx.translate(state.pan.x * scale + 10, state.pan.y * scale + 10);
+  ctx.scale(state.zoom * scale, state.zoom * scale);
+  state.nodes.forEach(n => {
+    const def = getCompDef(n.compId);
+    ctx.fillStyle = def?.color || '#00d4ff';
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(n.x, n.y, 80, 50);
+    ctx.globalAlpha = 1;
+  });
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(0,212,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(1, 1, 138, 88);
+}
+
+function notify(msg, type = 'info') {
+  const container = document.getElementById('notifications');
+  const el = document.createElement('div');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  el.className = `notif ${type}`;
+  el.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════
+
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'v' || e.key === 'V') setTool('select');
+    if (e.key === 'c' || e.key === 'C') setTool('connect');
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); }
+    if (e.key === '+' || e.key === '=') zoomIn();
+    if (e.key === '-') zoomOut();
+    if (e.key === '0') resetZoom();
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (state.selected) deleteNode(state.selected);
+    }
+    if (e.key === 'Escape') { finishConnect(); deselectAll(); hideContextMenu(); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════
+
+init();
+
+// Load default template on start
+setTimeout(() => {
+  loadTemplate(0);
+  saveHistory();
+}, 100);
+</script>
+</body>
+</html>

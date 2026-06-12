@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-border: var(--border);
+  --color-input: var(--bg3);
+  --color-ring: var(--accent);
+
+  --color-card: var(--panel);
+  --color-card-foreground: var(--text);
+
+  --color-popover: var(--panel);
+  --color-popover-foreground: var(--text);
+
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--bg);
+
+  --color-secondary: var(--bg3);
+  --color-secondary-foreground: var(--text2);
+
+  --color-muted: var(--bg2);
+  --color-muted-foreground: var(--text3);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--bg);
+
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--text);
+
+  --font-sans: var(--app-font-sans);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+}
+
+:root {
+  --bg: #0a0d12;
+  --bg2: #0f1318;
+  --bg3: #141920;
+  --panel: #111620;
+  --border: #1e2a38;
+  --border2: #253040;
+  --accent: #00d4ff;
+  --accent2: #0088ff;
+  --accent3: #00ff88;
+  --accent4: #ff6b35;
+  --aws: #ff9900;
+  --azure: #0078d4;
+  --gcp: #4285f4;
+  --text: #e8edf5;
+  --text2: #7a90a8;
+  --text3: #4a5a70;
+  --danger: #ff4466;
+  --warn: #ffaa00;
+  --success: #00d488;
+  --canvas-bg: #0d1117;
+  --shadow: 0 4px 24px rgba(0,0,0,0.6);
+  --glow: 0 0 20px rgba(0,212,255,0.15);
+
+  --app-font-sans: 'Syne', sans-serif;
+  --app-font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  * { @apply border-border box-border; }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--app-font-sans);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+  }
+  input, textarea, select { user-select: text; }
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ─── SHADCN OVERRIDES ─── */
+.bg-background { background: var(--bg) !important; }
+.bg-card { background: var(--panel) !important; }
+.border-border { border-color: var(--border) !important; }
+.text-foreground { color: var(--text) !important; }
+.text-muted-foreground { color: var(--text2) !important; }
+
+/* ─── BUTTON COMPONENT ─── */
+[data-slot="button"] {
+  font-family: var(--app-font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* ─── INPUT COMPONENT ─── */
+[data-slot="input"] {
+  font-family: var(--app-font-mono) !important;
+  font-size: 12px !important;
+  background: var(--bg3) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+[data-slot="input"]:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.2) !important;
+  outline: none !important;
+}
+[data-slot="input"]::placeholder { color: var(--text3) !important; }
+
+/* ─── DIALOG ─── */
+[data-slot="dialog-overlay"] {
+  background: rgba(0,0,0,0.75) !important;
+  backdrop-filter: blur(4px) !important;
+}
+[data-slot="dialog-content"] {
+  background: var(--panel) !important;
+  border-color: var(--border2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8) !important;
+}
+
+/* ─── SELECT ─── */
+[data-slot="select-trigger"] {
+  font-family: var(--app-font-mono) !important;
+  font-size: 11px !important;
+  background: var(--bg3) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+[data-slot="select-content"] {
+  background: var(--panel) !important;
+  border-color: var(--border2) !important;
+  font-family: var(--app-font-sans) !important;
+}
+[data-slot="select-item"] { color: var(--text2) !important; }
+[data-slot="select-item"]:hover { background: var(--bg3) !important; color: var(--text) !important; }
+
+/* ─── BADGE ─── */
+[data-slot="badge"] {
+  font-family: var(--app-font-sans) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* ─── TOOLTIP ─── */
+[data-slot="tooltip-content"] {
+  background: var(--panel) !important;
+  border-color: var(--border2) !important;
+  color: var(--text) !important;
+  font-family: var(--app-font-sans) !important;
+  font-size: 11px !important;
+}
+
+/* ─── CARD ─── */
+[data-slot="card"] {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+}
+
+/* ─── SWITCH ─── */
+[data-slot="switch"] {
+  background: var(--border2) !important;
+}
+[data-slot="switch"][data-state="checked"] {
+  background: var(--accent2) !important;
+}
+
+/* ─── LABEL ─── */
+[data-slot="label"] {
+  font-family: var(--app-font-sans) !important;
+  color: var(--text2) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+/* ─── REACTFLOW OVERRIDES ─── */
+.react-flow__background { background: var(--canvas-bg); }
+
+.react-flow__node { font-family: var(--app-font-sans); }
+
+.react-flow__edge-path {
+  stroke: rgba(0, 212, 255, 0.45);
+  stroke-width: 1.5;
+}
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke: rgba(0, 212, 255, 0.7);
+  stroke-dasharray: 6 4;
+}
+.react-flow__edge-label {
+  font-family: var(--app-font-mono) !important;
+  font-size: 9px !important;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 2px solid var(--border2);
+  transition: all 0.15s;
+}
+.react-flow__handle:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.4);
+}
+
+/* Fix handle positioning to not shift on hover */
+.react-flow__handle-top { transform: translate(-50%, -50%); }
+.react-flow__handle-bottom { transform: translate(-50%, 50%); }
+.react-flow__handle-left { transform: translate(-50%, -50%); }
+.react-flow__handle-right { transform: translate(50%, -50%); }
+.react-flow__handle-top:hover { transform: translate(-50%, -50%) scale(1.4); }
+.react-flow__handle-bottom:hover { transform: translate(-50%, 50%) scale(1.4); }
+.react-flow__handle-left:hover { transform: translate(-50%, -50%) scale(1.4); }
+.react-flow__handle-right:hover { transform: translate(50%, -50%) scale(1.4); }
+
+.react-flow__minimap {
+  background: rgba(10, 13, 18, 0.9) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 6px !important;
+}
+
+.react-flow__controls {
+  background: var(--panel) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--shadow) !important;
+}
+.react-flow__controls-button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text2) !important;
+  fill: var(--text2) !important;
+}
+.react-flow__controls-button:last-child { border-bottom: none !important; }
+.react-flow__controls-button:hover {
+  background: var(--bg3) !important;
+  color: var(--accent) !important;
+  fill: var(--accent) !important;
+}
+
+/* ─── CODE BLOCK ─── */
+.code-block {
+  font-family: var(--app-font-mono);
+  font-size: 10px;
+  color: #8fbcdb;
+  line-height: 1.6;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  white-space: pre;
+  overflow: auto;
+}
+
+/* ─── STATUS BAR ─── */
+.statusbar {
+  height: 26px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 20px;
+  font-size: 10px;
+  font-family: var(--app-font-mono);
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+/* ─── NOTIFICATION ─── */
+@keyframes notif-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── HIDE REPLIT BADGE ─── */
+#replit-badge,
+[data-replit-badge],
+.__replco-badge,
+.__replit-badge {
+  display: none !important;
+}
